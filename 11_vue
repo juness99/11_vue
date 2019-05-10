@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    
+    <div id="app">
+        <div v-for="movie in movies">
+            <h3>{{movie.title}} : {{movie.genre}}</h3>
+            <input type="text" v-model= "movie.newScore" @keyup.enter="addScore(movie)">
+            <li v-for="score in movie.score_set">{{score.content}}</li>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script>
+        const MY_SERVER="https://project-06-juness99.c9users.io:8080"
+        const app = new Vue({
+            el:"#app",
+            data:{
+                movies:[]
+            },
+        
+            mounted:function(){
+                axios.get(`${MY_SERVER}/api/v1/movies`)
+                // 성공했을때
+                .then((r)=>{
+                    console.log(r)
+                    const movies = r.data
+                    this.movies = movies.map((m)=>{
+                        // {title:엄복동,genre:1, newScore:''}
+                        return{...m, newScore:''}
+
+                    })
+                    // 결과로 나온 데이터를 movies에 넣는다
+                    this.movies = r.data
+
+                })
+                //에러가 났을때 하는방법
+                .catch((e)=>{console.log(e)})
+            },
+            methods:{
+                addScore:function(movie){
+                    axios.post(`${MY_SERVER}/api/v1/movies/${movie.id}/scores/`,{content:movie.newScore,score:1})
+                    .then((r)=>{
+                    console.log(r)
+                    const score = r.data.data
+                    movie.score_set.push(score)
+                    movie.newScore=''             
+                    })
+                    .catch()
+                }
+            }
+
+        })
+    </script>
+</head>
+<body>
+    
+</body>
+</html>
